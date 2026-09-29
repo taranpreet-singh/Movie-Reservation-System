@@ -1,0 +1,35 @@
+# Environment / secrets
+.env
+.env.local
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+/bin/
+/tmp/
+
+# Go coverage / profiling output
+*.out
+*.prof
+
+# Go workspace files (not this repo's go.mod, just local multi-module setups)
+go.work
+go.work.sum
+
+# swaggo-generated docs (regenerate via `swag init`, don't hand-edit or commit)
+/docs/docs.go
+/docs/swagger.json
+/docs/swagger.yaml
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+
+# OS cruft
+.DS_Store
+Thumbs.db
