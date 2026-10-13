@@ -1,20 +1,37 @@
 package main
 
 import (
+	"log"
+	"movie-reservation-system/api/handler"
+	"movie-reservation-system/api/middleware"
+	"movie-reservation-system/api/routes"
 	"movie-reservation-system/internal/config"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
+	"movie-reservation-system/internal/db"
+	"movie-reservation-system/internal/repository"
+	"movie-reservation-system/internal/service"
 )
 
 func main() {
-	router := gin.Default()
+	cfg := config.Load()
+	if cfg.DatabaseURL == "" || cfg.JWTSecret == "" {
+		log.Fatal("DATABASE_URL and JWT_SECRET must be set")
+	}
 
-	config.Load()
+	database, err := db.New(cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer database.Close()
 
-	router.GET("/healthz", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"health": "Okay"})
-	})
+	userRepo := repository.NewUserRepository(database)
+	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
+	authHandler := handler.NewAuthHandler(authService)
 
-	router.Run()
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService)
+
+	router := routes.New(authHandler, userHandler, middleware.AuthRequired(cfg.JWTSecret))
+	if err := router.Run(":" + cfg.Port); err != nil {
+		log.Fatalf("server stopped: %v", err)
+	}
 }

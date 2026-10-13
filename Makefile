@@ -1,13 +1,16 @@
 include .env
 export 
 
-MIGRATIONS_PATH = internal/migrations
+MIGRATIONS_PATH = internal/db/migrations
 
 migrate-up:
 	migrate -path $(MIGRATIONS_PATH) -database "$(DATABASE_URL)" up
 
 migrate-down:
 	migrate -path $(MIGRATIONS_PATH) -database "$(DATABASE_URL)" down 1
+
+migrate-force:
+	migrate -path $(MIGRATIONS_PATH) -database "$(DATABASE_URL)" force $(v)
 
 run:
 	go run ./cmd/api
